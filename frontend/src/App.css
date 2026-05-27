@@ -1,0 +1,403 @@
+/* ========================= */
+/* RESET */
+/* ========================= */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #eef2f7;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #1f2937;
+}
+
+/* ========================= */
+/* APP */
+/* ========================= */
+
+.app {
+  min-height: 100vh;
+}
+
+.dashboard-container {
+  padding: 24px;
+}
+
+/* ========================= */
+/* HEADER */
+/* ========================= */
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.header h1 {
+  font-size: 30px;
+  font-weight: 700;
+  color: #111827;
+}
+
+/* ========================= */
+/* BOTÃO */
+/* ========================= */
+
+.upload-button {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+}
+
+.upload-button:hover {
+  transform: translateY(-1px);
+  opacity: 0.95;
+}
+
+/* ========================= */
+/* LOADING */
+/* ========================= */
+
+.loading {
+  background: white;
+  padding: 24px;
+  border-radius: 14px;
+  font-size: 18px;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+/* ========================= */
+/* TABELA CONTAINER */
+/* ========================= */
+
+.table-container {
+  overflow-x: auto;
+  background: white;
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+}
+
+/* ========================= */
+/* TABELA */
+/* ========================= */
+
+.ranking-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 1900px;
+}
+
+/* ========================= */
+/* HEADER TABELA */
+/* ========================= */
+
+.ranking-table th {
+  background: #111827;
+  color: white;
+  padding: 16px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  white-space: nowrap;
+}
+
+.ranking-table th:first-child {
+  border-top-left-radius: 12px;
+}
+
+.ranking-table th:last-child {
+  border-top-right-radius: 12px;
+}
+
+/* ========================= */
+/* CELLS */
+/* ========================= */
+
+.ranking-table td {
+  padding: 12px;
+  text-align: center;
+  font-size: 13px;
+  border-bottom: 1px solid #e5e7eb;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+/* ========================= */
+/* LINHAS */
+/* ========================= */
+
+.ranking-table tbody tr {
+  background: white;
+}
+
+.ranking-table tbody tr:nth-child(even) {
+  background: #f9fafb;
+}
+
+.ranking-table tbody tr:hover {
+  background: #eef4ff;
+}
+
+/* ========================= */
+/* UNIDADE */
+/* ========================= */
+
+.unidade-cell {
+  text-align: left !important;
+  font-weight: 600;
+  min-width: 260px;
+  color: #111827;
+}
+
+/* ========================= */
+/* MÉDIA TOTAL */
+/* ========================= */
+
+.media-total {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+/* ========================= */
+/* CORES DAS MÉTRICAS */
+/* ========================= */
+
+.cell-gold {
+  background: #ffe58f !important;
+  color: #7a5200 !important;
+  font-weight: 700;
+  border-radius: 8px;
+}
+
+.cell-silver {
+  background: #dbe4f0 !important;
+  color: #334155 !important;
+  font-weight: 700;
+  border-radius: 8px;
+}
+
+.cell-bronze {
+  background: #f5d0a9 !important;
+  color: #7c2d12 !important;
+  font-weight: 700;
+  border-radius: 8px;
+}
+
+.cell-red {
+  background: #fecaca !important;
+  color: #991b1b !important;
+  font-weight: 700;
+  border-radius: 8px;
+}
+
+/* ========================= */
+/* TOP 3 */
+/* ========================= */
+
+.rank-1 {
+  background: linear-gradient(135deg, #ffd700, #facc15) !important;
+  color: #000;
+  font-weight: bold;
+  font-size: 15px;
+  border-radius: 8px;
+}
+
+.rank-2 {
+  background: linear-gradient(135deg, #d1d5db, #9ca3af) !important;
+  color: #111827;
+  font-weight: bold;
+  font-size: 15px;
+  border-radius: 8px;
+}
+
+.rank-3 {
+  background: linear-gradient(135deg, #d97706, #92400e) !important;
+  color: white;
+  font-weight: bold;
+  font-size: 15px;
+  border-radius: 8px;
+}
+
+/* ========================= */
+/* SCROLL */
+/* ========================= */
+
+.table-container::-webkit-scrollbar {
+  height: 10px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+
+.table-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ========================= */
+/* RESPONSIVO */
+/* ========================= */
+
+@media (max-width: 1200px) {
+  .dashboard-container {
+    padding: 14px;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .header h1 {
+    font-size: 22px;
+  }
+
+  .ranking-table th,
+  .ranking-table td {
+    font-size: 11px;
+    padding: 8px;
+  }
+
+  .upload-button {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+/* ========================= */
+/* FILTROS */
+/* ========================= */
+
+.filters-container {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.filter-input {
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  font-size: 14px;
+  min-width: 220px;
+  background: white;
+}
+
+.filter-input:focus {
+  outline: none;
+  border-color: #2563eb;
+}
+
+.clear-filter-button {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+.clear-filter-button:hover {
+  opacity: 0.9;
+}
+
+/* ========================= */
+/* SCROLL HORIZONTAL MELHORADO */
+/* ========================= */
+
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 80vh;
+
+  border-radius: 18px;
+
+  scrollbar-width: thin;
+  scrollbar-color: #94a3b8 #e5e7eb;
+}
+
+/* Chrome */
+
+.table-container::-webkit-scrollbar {
+  height: 14px;
+  width: 12px;
+}
+
+.table-container::-webkit-scrollbar-track {
+  background: #e5e7eb;
+  border-radius: 999px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 999px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* ========================= */
+/* TABELA */
+/* ========================= */
+
+.ranking-table {
+  min-width: 2600px;
+}
+
+/* ========================= */
+/* COLUNAS FIXAS */
+/* ========================= */
+
+.ranking-table th:first-child,
+.ranking-table td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 20;
+  background: white;
+}
+
+.ranking-table th:nth-child(2),
+.ranking-table td:nth-child(2) {
+  position: sticky;
+  left: 90px;
+  z-index: 20;
+  background: white;
+}
+
+/* HEADER FIXO */
+
+.ranking-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+
+/* MANTER CORES DOS TOP 3 */
+
+.rank-1,
+.rank-2,
+.rank-3 {
+  z-index: 25 !important;
+}
