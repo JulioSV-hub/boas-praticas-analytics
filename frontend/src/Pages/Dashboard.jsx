@@ -46,7 +46,7 @@ const Dashboard = () => {
       setLoading(true);
 
       const response = await fetch(
-        "http://localhost:8000/upload",
+        "https://boas-praticas-api.onrender.com/upload",
         {
           method: "POST",
           body: formData,
