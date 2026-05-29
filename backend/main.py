@@ -9,7 +9,7 @@ import math
 app = FastAPI(title="Boas Práticas Analytics")
 
 # =====================================
-# CACHE EM MEMÓRIA
+# CACHE
 # =====================================
 
 ULTIMO_RESULTADO = {}
@@ -38,7 +38,7 @@ def home():
     }
 
 # =====================================
-# AUDITORIA ENDPOINT
+# AUDITORIA
 # =====================================
 
 @app.get("/auditoria")
@@ -49,7 +49,7 @@ def obter_auditoria():
     return ULTIMO_RESULTADO
 
 # =====================================
-# FUNÇÕES AUXILIARES
+# AUXILIARES
 # =====================================
 
 def excel_col_to_index(col):
@@ -98,57 +98,6 @@ def safe_number(value):
 
     return round(float(value), 2)
 
-
-def valor_vazio(valor):
-
-    return (
-        pd.isna(valor)
-        or str(valor).strip() == ""
-    )
-
-
-def idade_menor_18(data_nascimento):
-
-    nascimento = pd.to_datetime(
-        data_nascimento,
-        errors="coerce"
-    )
-
-    if pd.isna(nascimento):
-        return False
-
-    hoje = pd.Timestamp.today()
-
-    idade = (
-        hoje.year
-        - nascimento.year
-        - (
-            (
-                hoje.month,
-                hoje.day
-            )
-            < (
-                nascimento.month,
-                nascimento.day
-            )
-        )
-    )
-
-    return idade < 18
-
-
-def tempo_maior_que(valor, limite):
-
-    valor = pd.to_numeric(
-        valor,
-        errors="coerce"
-    )
-
-    if pd.isna(valor):
-        return False
-
-    return valor > limite
-
 # =====================================
 # UPLOAD
 # =====================================
@@ -175,10 +124,15 @@ async def upload_excel(
 
     try:
 
+        print("LENDO PLANILHA...")
+
         df = pd.read_excel(
             temp_path,
             sheet_name="Inconsistências"
         )
+
+        print("PLANILHA CARREGADA")
+        print("LINHAS:", len(df))
 
         df.columns = (
             df.columns
@@ -186,19 +140,14 @@ async def upload_excel(
             .str.strip()
         )
 
-        coluna_unidade = (
-            "Data Access Group"
-        )
+        coluna_unidade = get_coluna(df, "C")
 
-        if (
-            coluna_unidade
-            not in df.columns
-        ):
+        if coluna_unidade is None:
 
             return {
                 "status": "error",
                 "message":
-                    "Coluna Data Access Group não encontrada"
+                    "Coluna C não encontrada"
             }
 
         coluna_data_admissao = (
@@ -213,11 +162,19 @@ async def upload_excel(
                     "Coluna I não encontrada"
             }
 
-        df[coluna_data_admissao] = (
-            pd.to_datetime(
-                df[coluna_data_admissao],
-                errors="coerce"
-            )
+        # =====================================
+        # CONVERSÕES
+        # =====================================
+
+        df[coluna_data_admissao] = pd.to_datetime(
+            df[coluna_data_admissao],
+            errors="coerce"
+        )
+
+        df[coluna_unidade] = (
+            df[coluna_unidade]
+            .astype(str)
+            .str.strip()
         )
 
         # =====================================
@@ -241,49 +198,10 @@ async def upload_excel(
         }
 
         # =====================================
-        # TEMPOS ASTRONÔMICOS
-        # =====================================
-
-        regras_tempos = {
-
-            "FA": 300,
-            "FB": 300,
-            "FC": 300,
-            "FD": 300,
-            "FE": 300,
-            "FF": 300,
-            "FG": 300,
-            "FH": 300,
-            "FI": 300,
-
-            "FJ": 14400,
-            "FK": 14400,
-            "FL": 14400,
-            "FM": 14400,
-            "FN": 14400,
-            "FO": 14400
-        }
-
-        # =====================================
-        # ESTRUTURAS
+        # RANKING
         # =====================================
 
         ranking_geral = []
-
-        auditoria = {
-            "registros": [],
-            "por_unidade": {}
-        }
-
-        # =====================================
-        # UNIDADES
-        # =====================================
-
-        df[coluna_unidade] = (
-            df[coluna_unidade]
-            .astype(str)
-            .str.strip()
-        )
 
         unidades = (
             df[coluna_unidade]
@@ -291,11 +209,17 @@ async def upload_excel(
             .unique()
         )
 
+        print("TOTAL UNIDADES:", len(unidades))
+
         # =====================================
-        # LOOP DAS UNIDADES
+        # LOOP UNIDADES
         # =====================================
 
         for unidade in unidades:
+
+            print(
+                f"PROCESSANDO: {unidade}"
+            )
 
             df_unidade = df[
                 df[coluna_unidade]
@@ -312,135 +236,6 @@ async def upload_excel(
 
             if df_unidade.empty:
                 continue
-
-            # =====================================
-            # AUDITORIA
-            # =====================================
-
-            inconsistencias_unidade = []
-
-            for idx, row in (
-                df_unidade.iterrows()
-            ):
-
-                inconsistencias = []
-
-                # MENOR DE 18
-
-                coluna_nascimento = (
-                    get_coluna(df, "F")
-                )
-
-                if coluna_nascimento:
-
-                    if idade_menor_18(
-                        row[coluna_nascimento]
-                    ):
-
-                        inconsistencias.append({
-
-                            "tipo":
-                                "idade_invalida",
-
-                            "campo":
-                                "Data Nascimento",
-
-                            "coluna":
-                                "F"
-                        })
-
-                # TIPO SCA
-
-                coluna_tipo_sca = (
-                    get_coluna(df, "AG")
-                )
-
-                if coluna_tipo_sca:
-
-                    if valor_vazio(
-                        row[coluna_tipo_sca]
-                    ):
-
-                        inconsistencias.append({
-
-                            "tipo":
-                                "tipo_sca_vazio",
-
-                            "campo":
-                                "Tipo SCA",
-
-                            "coluna":
-                                "AG"
-                        })
-
-                # TEMPOS ASTRONÔMICOS
-
-                for letra, limite in (
-                    regras_tempos.items()
-                ):
-
-                    coluna_tempo = (
-                        get_coluna(
-                            df,
-                            letra
-                        )
-                    )
-
-                    if coluna_tempo:
-
-                        valor = row[
-                            coluna_tempo
-                        ]
-
-                        if tempo_maior_que(
-                            valor,
-                            limite
-                        ):
-
-                            inconsistencias.append({
-
-                                "tipo":
-                                    "tempo_astronomico",
-
-                                "campo":
-                                    letra,
-
-                                "valor":
-                                    safe_number(valor)
-                            })
-
-                # SALVA REGISTRO
-
-                if inconsistencias:
-
-                    registro = {
-
-                        "linha_excel":
-                            int(idx + 2),
-
-                        "unidade":
-                            str(unidade),
-
-                        "total_inconsistencias":
-                            len(inconsistencias),
-
-                        "inconsistencias":
-                            inconsistencias
-                    }
-
-                    inconsistencias_unidade.append(
-                        registro
-                    )
-
-                    auditoria[
-                        "registros"
-                    ].append(
-                        registro
-                    )
-
-            # =====================================
-            # BASELINE
-            # =====================================
 
             primeira_data = (
                 df_unidade[
@@ -465,42 +260,37 @@ async def upload_excel(
                 ] >= fim_baseline
             ]
 
-            melhorias = []
-
             detalhes = {}
+
+            total_verdes = 0
+            total_amarelos = 0
+            total_vermelhos = 0
 
             # =====================================
             # MÉTRICAS
             # =====================================
 
-            for nome, letra in (
-                metricas.items()
-            ):
+            for nome, letra in metricas.items():
 
-                indice = (
-                    excel_col_to_index(
-                        letra
-                    )
+                print(
+                    f"Calculando: {nome}"
                 )
 
-                if indice >= len(df.columns):
+                coluna_real = get_coluna(
+                    df,
+                    letra
+                )
+
+                if not coluna_real:
                     continue
 
-                coluna_real = (
-                    df.columns[indice]
-                )
-
                 baseline = pd.to_numeric(
-                    df_baseline[
-                        coluna_real
-                    ],
+                    df_baseline[coluna_real],
                     errors="coerce"
                 ).dropna()
 
                 atual = pd.to_numeric(
-                    df_atual[
-                        coluna_real
-                    ],
+                    df_atual[coluna_real],
                     errors="coerce"
                 ).dropna()
 
@@ -534,9 +324,9 @@ async def upload_excel(
                             / baseline_mediana
                         ) * 100
 
-                    melhorias.append(
-                        melhoria
-                    )
+                percentual_safe = safe_number(
+                    percentual
+                )
 
                 detalhes[nome] = {
 
@@ -556,27 +346,37 @@ async def upload_excel(
                         ),
 
                     "percentual_melhoria":
-                        safe_number(
-                            percentual
-                        )
+                        percentual_safe
                 }
+
+                # =====================================
+                # CORES
+                # =====================================
+
+                if percentual_safe is None:
+
+                    total_vermelhos += 1
+
+                elif percentual_safe >= 21:
+
+                    total_verdes += 1
+
+                elif percentual_safe >= 1:
+
+                    total_amarelos += 1
+
+                else:
+
+                    total_vermelhos += 1
 
             # =====================================
             # SCORE
             # =====================================
 
             score = (
-
-                sum(melhorias)
-                / len(melhorias)
-
-                if melhorias
-                else None
+                total_verdes * 100
+                + total_amarelos
             )
-
-            # =====================================
-            # RANKING
-            # =====================================
 
             ranking_geral.append({
 
@@ -584,40 +384,20 @@ async def upload_excel(
                     str(unidade),
 
                 "score_melhoria":
-                    safe_number(score),
+                    int(score),
+
+                "total_verdes":
+                    total_verdes,
+
+                "total_amarelos":
+                    total_amarelos,
+
+                "total_vermelhos":
+                    total_vermelhos,
 
                 "detalhes_tempos":
                     detalhes
             })
-
-            # =====================================
-            # AUDITORIA POR UNIDADE
-            # =====================================
-
-            auditoria[
-                "por_unidade"
-            ][str(unidade)] = {
-
-                "total_registros_com_inconsistencia":
-                    len(
-                        inconsistencias_unidade
-                    ),
-
-                "total_inconsistencias":
-                    sum(
-                        item[
-                            "total_inconsistencias"
-                        ]
-                        for item
-                        in inconsistencias_unidade
-                    ),
-
-                "registros":
-                    inconsistencias_unidade[:50],
-
-                "detalhes_tempos":
-                    detalhes
-            }
 
         # =====================================
         # ORDENAÇÃO
@@ -627,11 +407,12 @@ async def upload_excel(
 
             ranking_geral,
 
-            key=lambda x:
-                x["score_melhoria"]
-                if x["score_melhoria"]
-                is not None
-                else -999999,
+            key=lambda x: (
+
+                x.get("total_verdes", 0),
+                x.get("total_amarelos", 0)
+
+            ),
 
             reverse=True
         )
@@ -644,23 +425,6 @@ async def upload_excel(
             item["ranking"] = posicao
 
         # =====================================
-        # RESUMO
-        # =====================================
-
-        resumo = {
-
-            "melhor_unidade":
-                ranking_geral[0]["unidade"]
-                if ranking_geral
-                else None,
-
-            "pior_unidade":
-                ranking_geral[-1]["unidade"]
-                if ranking_geral
-                else None
-        }
-
-        # =====================================
         # CACHE
         # =====================================
 
@@ -668,12 +432,11 @@ async def upload_excel(
 
         ULTIMO_RESULTADO = {
 
-            "auditoria":
-                auditoria,
-
             "ranking":
                 ranking_geral
         }
+
+        print("FINALIZADO COM SUCESSO")
 
         # =====================================
         # RETORNO
@@ -687,11 +450,17 @@ async def upload_excel(
             "total_unidades":
                 len(ranking_geral),
 
-            "resumo_ranking":
-                resumo,
-
             "ranking_geral_melhoria":
                 ranking_geral
+        }
+
+    except Exception as e:
+
+        print("ERRO:", str(e))
+
+        return {
+            "status": "error",
+            "message": str(e)
         }
 
     finally:
